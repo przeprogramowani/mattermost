@@ -8,7 +8,9 @@ import {useSelector} from 'react-redux';
 
 import {getCurrentChannelNameForSearchShortcut} from 'mattermost-redux/selectors/entities/channels';
 
+import FlaggedPostsContainer from 'components/flagged_posts_container';
 import HeaderIconWrapper from 'components/channel_header/components/header_icon_wrapper';
+import PinnedPostsContainer from 'components/pinned_posts_container';
 import SearchBar from 'components/search_bar/search_bar';
 import SearchHint from 'components/search_hint/search_hint';
 import SearchResults from 'components/search_results';
@@ -547,27 +549,33 @@ const Search = ({
                 </div>
             )}
             {searchVisible ? (
-                <SearchResults
-                    isMentionSearch={isMentionSearch}
-                    isFlaggedPosts={isFlaggedPosts}
-                    isPinnedPosts={isPinnedPosts}
-                    isChannelFiles={isChannelFiles}
-                    shrink={handleShrink}
-                    channelDisplayName={channelDisplayName}
-                    isOpened={isSideBarRightOpen}
-                    updateSearchTerms={handleAddSearchTerm}
-                    updateSearchTeam={handleUpdateSearchTeamFromResult}
-                    handleSearchHintSelection={handleSearchHintSelection}
-                    isSideBarExpanded={isRhsExpanded}
-                    getMorePostsForSearch={getMorePostsForSearchCallback}
-                    getMoreFilesForSearch={getMoreFilesForSearchCallback}
-                    getMoreFlaggedPosts={getMoreFlaggedPostsCallback}
-                    setSearchFilterType={handleSetSearchFilter}
-                    searchFilterType={searchFilterType}
-                    setSearchType={(value: SearchType) => updateSearchType(value)}
-                    searchType={searchType || 'messages'}
-                    crossTeamSearchEnabled={crossTeamSearchEnabled}
-                />
+                isFlaggedPosts ? (
+                    <FlaggedPostsContainer/>
+                ) : isPinnedPosts ? (
+                    <PinnedPostsContainer/>
+                ) : (
+                    <SearchResults
+                        isMentionSearch={isMentionSearch}
+                        isFlaggedPosts={isFlaggedPosts}
+                        isPinnedPosts={isPinnedPosts}
+                        isChannelFiles={isChannelFiles}
+                        shrink={handleShrink}
+                        channelDisplayName={channelDisplayName}
+                        isOpened={isSideBarRightOpen}
+                        updateSearchTerms={handleAddSearchTerm}
+                        updateSearchTeam={handleUpdateSearchTeamFromResult}
+                        handleSearchHintSelection={handleSearchHintSelection}
+                        isSideBarExpanded={isRhsExpanded}
+                        getMorePostsForSearch={getMorePostsForSearchCallback}
+                        getMoreFilesForSearch={getMoreFilesForSearchCallback}
+                        getMoreFlaggedPosts={getMoreFlaggedPostsCallback}
+                        setSearchFilterType={handleSetSearchFilter}
+                        searchFilterType={searchFilterType}
+                        setSearchType={(value: SearchType) => updateSearchType(value)}
+                        searchType={searchType || 'messages'}
+                        crossTeamSearchEnabled={crossTeamSearchEnabled}
+                    />
+                )
             ) : children}
         </div>
     );

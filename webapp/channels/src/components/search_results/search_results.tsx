@@ -15,7 +15,6 @@ import {isDateLine, getDateForDateLine} from 'mattermost-redux/utils/post_list';
 
 import {getFilesDropdownPluginMenuItems} from 'selectors/plugins';
 
-import Scrollbars from 'components/common/scrollbars';
 import FileSearchResultItem from 'components/file_search_results';
 import NoResultsIndicator from 'components/no_results_indicator/no_results_indicator';
 import {NoResultsVariant} from 'components/no_results_indicator/types';
@@ -29,6 +28,7 @@ import {isFileAttachmentsEnabled} from 'utils/file_utils';
 
 import FilesFilterMenu from './files_filter_menu';
 import MessageOrFileSelector from './messages_or_files_selector';
+import PostListCore from './post_list_core';
 import PostSearchResultsItem from './post_search_results_item';
 import SearchLimitsBanner from './search_limits_banner';
 import type {Props} from './types';
@@ -156,9 +156,6 @@ const SearchResults: React.FC<Props> = (props: Props): JSX.Element => {
     const showLoadMore = !isAtEnd && !isChannelFiles && !isPinnedPosts;
     const isMessagesSearch = (!isFlaggedPosts && !isMentionSearch && !isCard && !isPinnedPosts && !isChannelFiles);
 
-    let contentItems;
-    let loadingMorePostsComponent;
-
     let sortedResults: any = results;
 
     let titleDescriptor;
@@ -242,110 +239,128 @@ const SearchResults: React.FC<Props> = (props: Props): JSX.Element => {
         updateSearchTerms(term);
     };
 
-    switch (true) {
-    case isLoading:
-        contentItems = (
-            <div className='sidebar--right__subheader a11y__section'>
-                <div className='sidebar--right__loading'>
-                    <LoadingWrapper text={defineMessage({id: 'search_header.loading', defaultMessage: 'Searching'})}/>
-                </div>
-            </div>
-        );
-        break;
-    case (noResults && !searchTerms && !isMentionSearch && !isPinnedPosts && !isFlaggedPosts && !isChannelFiles):
-        contentItems = (
-            <div className='sidebar--right__subheader search__hints a11y__section'>
-                <SearchHint
-                    onOptionSelected={handleOptionSelection}
-                    options={searchHintOptions}
-                />
-            </div>
-        );
-        break;
-    case noResults && (searchType === DataSearchTypes.MESSAGES_SEARCH_TYPE && !isChannelFiles):
-        contentItems = (
-            <div
-                className={classNames([
-                    'sidebar--right__subheader a11y__section',
-                    {'sidebar-expanded': isSideBarExpanded},
-                ])}
-                aria-live='polite'
-            >
-                <NoResultsIndicator
-                    style={{padding: '48px'}}
-                    {...noResultsProps}
-                />
-            </div>
-        );
-        break;
-    case noFileResults && (searchType === DataSearchTypes.FILES_SEARCH_TYPE || isChannelFiles):
-        contentItems = (
-            <div
-                className={classNames([
-                    'sidebar--right__subheader a11y__section',
-                    {'sidebar-expanded': isSideBarExpanded},
-                ])}
-                aria-live='polite'
-            >
-                <NoResultsIndicator
-                    style={{padding: '48px'}}
-                    {...noResultsProps}
-                />
-            </div>
-        );
-        break;
-    default:
-        if (searchType === DataSearchTypes.FILES_SEARCH_TYPE || isChannelFiles) {
-            sortedResults = fileResults;
-        }
-
-        contentItems = sortedResults.map((item: string|Post|FileSearchResultItemType, index: number) => {
-            if (searchType === DataSearchTypes.MESSAGES_SEARCH_TYPE && !props.isChannelFiles) {
-                if (typeof item === 'string' && isDateLine(item)) {
-                    const date = getDateForDateLine(item);
-                    return (
-                        <DateSeparator
-                            key={date}
-                            date={date}
-                        />
-                    );
-                }
-
-                const post = item as Post;
+    // Prepare render functions for PostListCore
+    const renderItem = (item: string | Post | FileSearchResultItemType, index: number) => {
+        if (searchType === DataSearchTypes.MESSAGES_SEARCH_TYPE && !props.isChannelFiles) {
+            if (typeof item === 'string' && isDateLine(item)) {
+                const date = getDateForDateLine(item);
                 return (
-                    <PostSearchResultsItem
-                        key={post.id}
-                        post={post}
-                        matches={props.matches[post.id] || []}
-                        searchTerm={searchTerms}
-                        isFlaggedPosts={props.isFlaggedPosts}
-                        isMentionSearch={props.isMentionSearch}
-                        isPinnedPosts={props.isPinnedPosts}
-                        a11yIndex={index}
+                    <DateSeparator
+                        key={date}
+                        date={date}
                     />
                 );
             }
+
+            const post = item as Post;
             return (
-                <FileSearchResultItem
-                    key={(item as FileSearchResultItemType).id}
-                    channelId={(item as FileSearchResultItemType).channel_id}
-                    fileInfo={item as FileSearchResultItemType}
-                    teamName={props.currentTeamName}
-                    pluginMenuItems={filesDropdownPluginMenuItems}
+                <PostSearchResultsItem
+                    key={post.id}
+                    post={post}
+                    matches={props.matches[post.id] || []}
+                    searchTerm={searchTerms}
+                    isFlaggedPosts={props.isFlaggedPosts}
+                    isMentionSearch={props.isMentionSearch}
+                    isPinnedPosts={props.isPinnedPosts}
+                    a11yIndex={index}
                 />
             );
-        });
+        }
 
-        loadingMorePostsComponent = (showLoadMore || (isFlaggedPosts && props.isGettingMoreFlaggedPosts && !props.isFlaggedAtEnd)) ? (
-            <div className='loading-screen'>
-                <div className='loading__content'>
-                    <div className='round round-1'/>
-                    <div className='round round-2'/>
-                    <div className='round round-3'/>
-                </div>
+        // File results
+        return (
+            <FileSearchResultItem
+                key={(item as FileSearchResultItemType).id}
+                channelId={(item as FileSearchResultItemType).channel_id}
+                fileInfo={item as FileSearchResultItemType}
+                teamName={props.currentTeamName}
+                pluginMenuItems={filesDropdownPluginMenuItems}
+            />
+        );
+    };
+
+    const renderLoading = () => (
+        <div className='sidebar--right__subheader a11y__section'>
+            <div className='sidebar--right__loading'>
+                <LoadingWrapper text={defineMessage({id: 'search_header.loading', defaultMessage: 'Searching'})}/>
             </div>
-        ) : null;
-    }
+        </div>
+    );
+
+    const renderEmpty = () => {
+        // Determine if should show search hints or no results
+        const showSearchHints = (noResults && !searchTerms && !isMentionSearch && !isPinnedPosts && !isFlaggedPosts && !isChannelFiles);
+
+        if (showSearchHints) {
+            return (
+                <div className='sidebar--right__subheader search__hints a11y__section'>
+                    <SearchHint
+                        onOptionSelected={handleOptionSelection}
+                        options={searchHintOptions}
+                    />
+                </div>
+            );
+        }
+
+        return (
+            <div
+                className={classNames([
+                    'sidebar--right__subheader a11y__section',
+                    {'sidebar-expanded': isSideBarExpanded},
+                ])}
+                aria-live='polite'
+            >
+                <NoResultsIndicator
+                    style={{padding: '48px'}}
+                    {...noResultsProps}
+                />
+            </div>
+        );
+    };
+
+    const renderLoadingMore = () => (
+        <div className='loading-screen'>
+            <div className='loading__content'>
+                <div className='round round-1'/>
+                <div className='round round-2'/>
+                <div className='round round-3'/>
+            </div>
+        </div>
+    );
+
+    // Determine what to render based on search type
+    const itemsToRender = searchType === DataSearchTypes.FILES_SEARCH_TYPE || isChannelFiles
+        ? fileResults
+        : sortedResults;
+
+    // Use PostListCore for rendering
+    const listContent = (
+        <PostListCore
+            items={itemsToRender}
+            renderItem={renderItem}
+            renderEmpty={renderEmpty}
+            renderLoading={renderLoading}
+            renderLoadingMore={renderLoadingMore}
+            isLoading={isLoading}
+            isLoadingMore={props.isSearchGettingMore || props.isGettingMoreFlaggedPosts}
+            showLoadMore={showLoadMore}
+            onScroll={handleScroll}
+            scrollbarRef={scrollbars}
+            containerClassName={classNames([
+                'search-items-container post-list__table a11y__region',
+                {
+                    'no-results': (noResults && searchType === DataSearchTypes.MESSAGES_SEARCH_TYPE) || (noFileResults && (searchType === DataSearchTypes.FILES_SEARCH_TYPE || isChannelFiles)),
+                    'channel-files-container': isChannelFiles,
+                },
+            ])}
+            ariaLabel={intl.formatMessage({
+                id: 'accessibility.sections.rhs',
+                defaultMessage: '{regionTitle} complementary region',
+            }, {
+                regionTitle: formattedTitle,
+            })}
+        />
+    );
 
     return (
         <div
@@ -385,39 +400,7 @@ const SearchResults: React.FC<Props> = (props: Props): JSX.Element => {
                 </div>
             }
             <SearchLimitsBanner searchType={searchType}/>
-            <Scrollbars
-                ref={scrollbars}
-                color='--center-channel-color-rgb'
-                onScroll={handleScroll}
-            >
-                <div
-                    id='search-items-container'
-                    className={classNames([
-                        'search-items-container post-list__table a11y__region',
-                        {
-                            'no-results': (noResults && searchType === DataSearchTypes.MESSAGES_SEARCH_TYPE) || (noFileResults && (searchType === DataSearchTypes.FILES_SEARCH_TYPE || isChannelFiles)),
-                            'channel-files-container': isChannelFiles,
-                        },
-                    ])}
-                    data-a11y-sort-order='3'
-                    data-a11y-focus-child={true}
-                    data-a11y-loop-navigation={false}
-                    aria-label={intl.formatMessage({
-                        id: 'accessibility.sections.rhs',
-                        defaultMessage: '{regionTitle} complementary region',
-                    }, {
-                        regionTitle: formattedTitle,
-                    })}
-                >
-                    <div
-                        id={`${searchType}Panel`}
-                        className='files-or-messages-panel'
-                    >
-                        {contentItems}
-                    </div>
-                    {loadingMorePostsComponent}
-                </div>
-            </Scrollbars>
+            {listContent}
         </div>
     );
 };
