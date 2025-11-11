@@ -227,7 +227,7 @@ export function getMoreFilesForSearch(teamId: string): ActionFuncAsync {
     };
 }
 
-export function getFlaggedPosts(): ActionFuncAsync<PostList> {
+export function getFlaggedPosts(terms = ''): ActionFuncAsync<PostList> {
     return async (dispatch, getState) => {
         const state = getState();
         const userId = getCurrentUserId(state);
@@ -236,8 +236,8 @@ export function getFlaggedPosts(): ActionFuncAsync<PostList> {
 
         let posts;
         try {
-            // Fetch first page
-            posts = await Client4.getFlaggedPosts(userId, '', '', 0, 60);
+            // Fetch first page with search terms
+            posts = await Client4.getFlaggedPosts(userId, '', '', 0, 60, terms);
 
             await Promise.all([getMentionsAndStatusesForPosts(posts.posts, dispatch, getState), dispatch(getMissingChannelsFromPosts(posts.posts))]);
         } catch (error) {
@@ -260,7 +260,7 @@ export function getFlaggedPosts(): ActionFuncAsync<PostList> {
             {
                 type: SearchTypes.UPDATE_FLAGGED_POSTS_PAGINATION,
                 data: {
-                    params: {page: 0, per_page: 60},
+                    params: {page: 0, per_page: 60, terms},
                     isFlaggedEnd: isEnd,
                 },
             },
@@ -278,7 +278,7 @@ export function getMoreFlaggedPosts(): ActionFuncAsync {
         const state = getState();
         const userId = getCurrentUserId(state);
         const {params, isFlaggedEnd} = state.entities.search.flaggedPostsPagination || {
-            params: {page: 0, per_page: 60},
+            params: {page: 0, per_page: 60, terms: ''},
             isFlaggedEnd: false,
         };
 
@@ -306,6 +306,7 @@ export function getMoreFlaggedPosts(): ActionFuncAsync {
                 '', // teamId
                 newParams.page,
                 newParams.per_page,
+                newParams.terms || '', // Preserve search terms across pages
             );
 
             await Promise.all([

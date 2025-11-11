@@ -7852,11 +7852,11 @@ func (s *RetryLayerPostStore) GetEtag(channelID string, allowFromCache bool, col
 
 }
 
-func (s *RetryLayerPostStore) GetFlaggedPosts(userID string, offset int, limit int) (*model.PostList, error) {
+func (s *RetryLayerPostStore) GetFlaggedPosts(userID string, offset int, limit int, terms string) (*model.PostList, error) {
 
 	tries := 0
 	for {
-		result, err := s.PostStore.GetFlaggedPosts(userID, offset, limit)
+		result, err := s.PostStore.GetFlaggedPosts(userID, offset, limit, terms)
 		if err == nil {
 			return result, nil
 		}
@@ -7873,11 +7873,11 @@ func (s *RetryLayerPostStore) GetFlaggedPosts(userID string, offset int, limit i
 
 }
 
-func (s *RetryLayerPostStore) GetFlaggedPostsForChannel(userID string, channelID string, offset int, limit int) (*model.PostList, error) {
+func (s *RetryLayerPostStore) GetFlaggedPostsForChannel(userID string, channelID string, offset int, limit int, terms string) (*model.PostList, error) {
 
 	tries := 0
 	for {
-		result, err := s.PostStore.GetFlaggedPostsForChannel(userID, channelID, offset, limit)
+		result, err := s.PostStore.GetFlaggedPostsForChannel(userID, channelID, offset, limit, terms)
 		if err == nil {
 			return result, nil
 		}
@@ -7894,11 +7894,11 @@ func (s *RetryLayerPostStore) GetFlaggedPostsForChannel(userID string, channelID
 
 }
 
-func (s *RetryLayerPostStore) GetFlaggedPostsForTeam(userID string, teamID string, offset int, limit int) (*model.PostList, error) {
+func (s *RetryLayerPostStore) GetFlaggedPostsForTeam(userID string, teamID string, offset int, limit int, terms string) (*model.PostList, error) {
 
 	tries := 0
 	for {
-		result, err := s.PostStore.GetFlaggedPostsForTeam(userID, teamID, offset, limit)
+		result, err := s.PostStore.GetFlaggedPostsForTeam(userID, teamID, offset, limit, terms)
 		if err == nil {
 			return result, nil
 		}
@@ -8536,11 +8536,11 @@ func (s *RetryLayerPostStore) RefreshPostStats() error {
 
 }
 
-func (s *RetryLayerPostStore) RestoreContentFlaggedPost(post *model.Post, deletedBy string, statusFieldId string) error {
+func (s *RetryLayerPostStore) RestoreContentFlaggedPost(post *model.Post, statusFieldId string, contentFlaggingManagedFieldId string) error {
 
 	tries := 0
 	for {
-		err := s.PostStore.RestoreContentFlaggedPost(post, deletedBy, statusFieldId)
+		err := s.PostStore.RestoreContentFlaggedPost(post, statusFieldId, contentFlaggingManagedFieldId)
 		if err == nil {
 			return nil
 		}

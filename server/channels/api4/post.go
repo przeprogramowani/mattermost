@@ -359,6 +359,7 @@ func getFlaggedPostsForUser(c *Context, w http.ResponseWriter, r *http.Request) 
 
 	channelId := r.URL.Query().Get("channel_id")
 	teamId := r.URL.Query().Get("team_id")
+	terms := r.URL.Query().Get("terms")
 
 	// Convert page to offset: offset = page * perPage
 	offset := c.Params.Page * c.Params.PerPage
@@ -368,11 +369,11 @@ func getFlaggedPostsForUser(c *Context, w http.ResponseWriter, r *http.Request) 
 	var err *model.AppError
 
 	if channelId != "" {
-		posts, err = c.App.GetFlaggedPostsForChannel(c.Params.UserId, channelId, offset, limit)
+		posts, err = c.App.GetFlaggedPostsForChannel(c.Params.UserId, channelId, offset, limit, terms)
 	} else if teamId != "" {
-		posts, err = c.App.GetFlaggedPostsForTeam(c.Params.UserId, teamId, offset, limit)
+		posts, err = c.App.GetFlaggedPostsForTeam(c.Params.UserId, teamId, offset, limit, terms)
 	} else {
-		posts, err = c.App.GetFlaggedPosts(c.Params.UserId, offset, limit)
+		posts, err = c.App.GetFlaggedPosts(c.Params.UserId, offset, limit, terms)
 	}
 	if err != nil {
 		c.Err = err

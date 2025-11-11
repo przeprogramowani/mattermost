@@ -8,16 +8,8 @@ import {useSelector, useDispatch} from 'react-redux';
 import type {Post} from '@mattermost/types/posts';
 
 import {debounce} from 'mattermost-redux/actions/helpers';
+import {getMoreFlaggedPosts} from 'mattermost-redux/actions/search';
 import {isDateLine, getDateForDateLine} from 'mattermost-redux/utils/post_list';
-
-import DateSeparator from 'components/post_view/date_separator';
-import NoResultsIndicator from 'components/no_results_indicator/no_results_indicator';
-import {NoResultsVariant} from 'components/no_results_indicator/types';
-import SearchResultsHeader from 'components/search_results_header';
-import LoadingWrapper from 'components/widgets/loading/loading_wrapper';
-import PostSearchResultsItem from 'components/search_results/post_search_results_item';
-import SearchLimitsBanner from 'components/search_results/search_limits_banner';
-import PostListCore from 'components/search_results/post_list_core';
 
 import {
     getFlaggedPosts,
@@ -26,7 +18,17 @@ import {
     getIsFlaggedAtEnd,
 } from 'selectors/rhs';
 
-import {getMoreFlaggedPosts} from 'mattermost-redux/actions/search';
+import NoResultsIndicator from 'components/no_results_indicator/no_results_indicator';
+import {NoResultsVariant} from 'components/no_results_indicator/types';
+import DateSeparator from 'components/post_view/date_separator';
+import PostListCore from 'components/search_results/post_list_core';
+import PostSearchResultsItem from 'components/search_results/post_search_results_item';
+import SearchLimitsBanner from 'components/search_results/search_limits_banner';
+import SearchResultsHeader from 'components/search_results_header';
+import Input from 'components/widgets/inputs/input/input';
+import LoadingWrapper from 'components/widgets/loading/loading_wrapper';
+
+import {useFlaggedPostsSearch} from './use_flagged_posts_search';
 
 import './flagged_posts_container.scss';
 
@@ -42,6 +44,14 @@ const FlaggedPostsContainer: React.FC = () => {
     const isLoading = useSelector(getIsSearchingFlaggedPost);
     const isLoadingMore = useSelector(getIsGettingMoreFlaggedPosts);
     const isAtEnd = useSelector(getIsFlaggedAtEnd);
+
+    // Search functionality (SERVER-SIDE)
+    const {
+        inputValue,
+        searchTerm,
+        searchInputSuffix,
+        handleInputChange,
+    } = useFlaggedPostsSearch();
 
     // Load flagged posts on mount (if not already loaded)
     useEffect(() => {
@@ -89,7 +99,7 @@ const FlaggedPostsContainer: React.FC = () => {
                 key={post.id}
                 post={post}
                 matches={[]}
-                searchTerm={''}
+                searchTerm={searchTerm}
                 isFlaggedPosts={true}
                 isMentionSearch={false}
                 isPinnedPosts={false}
@@ -107,9 +117,14 @@ const FlaggedPostsContainer: React.FC = () => {
     );
 
     const renderEmpty = () => {
+        const hasSearchTerm = searchTerm.trim().length > 0;
+
         const noResultsProps = {
-            variant: NoResultsVariant.FlaggedPosts,
-            subtitleValues: {
+            variant: hasSearchTerm ?
+                NoResultsVariant.ChannelSearch : // "No results found"
+                NoResultsVariant.FlaggedPosts, // "No saved messages yet"
+            titleValues: hasSearchTerm ? {channelName: searchTerm} : undefined,
+            subtitleValues: hasSearchTerm ? undefined : {
                 buttonText: <strong>{
                     intl.formatMessage({
                         id: 'flag_post.flag',
@@ -156,6 +171,20 @@ const FlaggedPostsContainer: React.FC = () => {
                     {formattedTitle}
                 </h2>
             </SearchResultsHeader>
+            <div style={{padding: '12px 20px'}}>
+                <Input
+                    data-testid='flagged-posts-search'
+                    value={inputValue}
+                    onInput={(e) => handleInputChange(e.currentTarget.value)}
+                    inputPrefix={<i className='icon icon-magnify'/>}
+                    inputSuffix={searchInputSuffix}
+                    placeholder={intl.formatMessage({
+                        id: 'flagged_posts.search_bar.placeholder',
+                        defaultMessage: 'Search saved messages',
+                    })}
+                    useLegend={false}
+                />
+            </div>
             <SearchLimitsBanner searchType='messages'/>
             <PostListCore
                 items={posts}
