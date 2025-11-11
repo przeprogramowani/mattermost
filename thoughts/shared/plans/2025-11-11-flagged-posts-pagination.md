@@ -493,11 +493,13 @@ getMoreFlaggedPosts: () => void;
 ### Success Criteria
 
 #### Automated Verification:
-- [ ] TypeScript compilation passes: `cd webapp && npm run check-types`
-- [ ] ESLint passes: `cd webapp && npm run check`
+- [x] TypeScript compilation passes: `cd webapp && npm run check-types`
+- [ ] ESLint passes: `cd webapp && npm run check` (one minor formatting issue to fix)
 - [ ] Unit tests pass: `cd webapp && npm test`
 - [ ] Redux action tests pass for new actions
 - [ ] Reducer tests pass for pagination state
+- [x] Backend build passes: `cd server && make build`
+- [x] Fixed backend bug: API handler now correctly converts page→offset
 
 #### Manual Verification:
 - [ ] Create 61+ flagged posts in a test account
@@ -510,6 +512,14 @@ getMoreFlaggedPosts: () => void;
 - [ ] Flag a new post - verify it appears at the top without breaking pagination
 - [ ] Unflag a post from the first page - verify pagination still works
 - [ ] Unflag a post from a later page - verify no issues
+
+**Bug Fixes Applied:**
+- [x] Backend: Fixed API handler to correctly convert page→offset (page * perPage)
+- [x] Frontend: Created getFlaggedPosts selector to read from state.entities.search.flagged
+- [x] Frontend: Updated mapStateToProps to use getFlaggedPosts when isFlaggedPosts is true
+- [x] Frontend: Fixed loading indicator to work with flagged posts pagination
+- [x] Frontend: Fixed end state detection to include isFlaggedAtEnd in isAtEnd calculation
+- [x] Frontend: Fixed missing matches prop by providing empty array fallback for flagged posts
 
 **Implementation Note**: After completing this phase and all automated verification passes, pause here for manual confirmation from the human that the manual testing was successful before proceeding to the next phase.
 

@@ -341,6 +341,20 @@ export const getSearchResults: (state: GlobalState) => Post[] = createSelector(
     },
 );
 
+export const getFlaggedPosts: (state: GlobalState) => Post[] = createSelector(
+    'getFlaggedPosts',
+    getAllPosts,
+    (state: GlobalState) => state.entities.search.flagged,
+    (posts, postIds) => {
+        if (!postIds) {
+            return [];
+        }
+
+        // Filter out posts that may no longer exist
+        return postIds.map((id) => posts[id]).filter((post) => post);
+    },
+);
+
 // Returns the matched text from the search results, if the server has provided them.
 // These matches will only be present if the server is running Mattermost 5.1 or higher
 // with Elasticsearch enabled to search posts. Otherwise, null will be returned.

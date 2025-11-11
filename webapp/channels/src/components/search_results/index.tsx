@@ -7,7 +7,7 @@ import type {FileSearchResultItem} from '@mattermost/types/files';
 import type {Post} from '@mattermost/types/posts';
 
 import {getSearchFilesResults} from 'mattermost-redux/selectors/entities/files';
-import {getSearchMatches, getSearchResults} from 'mattermost-redux/selectors/entities/posts';
+import {getSearchMatches, getSearchResults, getFlaggedPosts} from 'mattermost-redux/selectors/entities/posts';
 import {getCurrentTeam} from 'mattermost-redux/selectors/entities/teams';
 import {makeAddDateSeparatorsForSearchResults} from 'mattermost-redux/utils/post_list';
 
@@ -19,6 +19,8 @@ import {
     getIsSearchingPinnedPost,
     getIsSearchGettingMore,
     getCurrentSearchForSearchTeam,
+    getIsGettingMoreFlaggedPosts,
+    getFlaggedPostsPagination,
 } from 'selectors/rhs';
 
 import type {GlobalState} from 'types/store';
@@ -33,7 +35,8 @@ function makeMapStateToProps() {
     const addDateSeparatorsForSearchResults = makeAddDateSeparatorsForSearchResults();
 
     return function mapStateToProps(state: GlobalState, ownProps: OwnProps) {
-        const newResults = getSearchResults(state);
+        // Use different selectors based on the view type
+        const newResults = ownProps.isFlaggedPosts ? getFlaggedPosts(state) : getSearchResults(state);
 
         // Cache results
         if (newResults && newResults !== results) {
@@ -81,6 +84,8 @@ function makeMapStateToProps() {
             isSearchFilesAtEnd: currentSearch.isFilesEnd,
             searchPage: currentSearch.params?.page,
             currentTeamName,
+            isGettingMoreFlaggedPosts: getIsGettingMoreFlaggedPosts(state),
+            isFlaggedAtEnd: getFlaggedPostsPagination(state).isFlaggedEnd,
         };
     };
 }

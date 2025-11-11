@@ -82,6 +82,13 @@ function matches(state: Record<string, string[]> = {}, action: MMReduxAction) {
 function flagged(state: string[] = [], action: MMReduxAction) {
     switch (action.type) {
     case SearchTypes.RECEIVED_SEARCH_FLAGGED_POSTS: {
+        if (action.isGettingMore) {
+
+            // Append new results, remove duplicates
+            return [...new Set(state.concat(action.data.order))];
+        }
+
+        // Replace results (initial load)
         return action.data.order;
     }
     case PostTypes.POST_REMOVED: {
@@ -294,6 +301,29 @@ function truncationInfo(state = {posts: 0, files: 0}, action: MMReduxAction) {
     }
 }
 
+function flaggedPostsPagination(state: any = {}, action: MMReduxAction) {
+    switch (action.type) {
+    case SearchTypes.UPDATE_FLAGGED_POSTS_PAGINATION:
+        return action.data;
+    case UserTypes.LOGOUT_SUCCESS:
+        return {};
+    default:
+        return state;
+    }
+}
+
+function isGettingMoreFlaggedPosts(state = false, action: MMReduxAction) {
+    switch (action.type) {
+    case SearchTypes.GET_MORE_FLAGGED_POSTS_REQUEST:
+        return true;
+    case SearchTypes.GET_MORE_FLAGGED_POSTS_SUCCESS:
+    case SearchTypes.GET_MORE_FLAGGED_POSTS_FAILURE:
+        return false;
+    default:
+        return state;
+    }
+}
+
 export default combineReducers({
 
     // An ordered array with posts ids of flagged posts
@@ -326,4 +356,10 @@ export default combineReducers({
 
     // Object tracking truncation info for posts and files separately
     truncationInfo,
+
+    // Object tracking pagination state for flagged posts
+    flaggedPostsPagination,
+
+    // Boolean true if we are getting more flagged posts
+    isGettingMoreFlaggedPosts,
 });

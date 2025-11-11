@@ -168,6 +168,17 @@ export function getIsSearchGettingMore(state: GlobalState): boolean {
     return state.entities.search.isSearchGettingMore;
 }
 
+export function getIsGettingMoreFlaggedPosts(state: GlobalState): boolean {
+    return state.entities.search.isGettingMoreFlaggedPosts || false;
+}
+
+export function getFlaggedPostsPagination(state: GlobalState) {
+    return state.entities.search.flaggedPostsPagination || {
+        params: {page: 0, per_page: 60},
+        isFlaggedEnd: false,
+    };
+}
+
 export function makeGetChannelDraft() {
     const defaultDraft = Object.freeze({
         message: '',

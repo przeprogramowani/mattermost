@@ -236,7 +236,8 @@ export function getFlaggedPosts(): ActionFuncAsync<PostList> {
 
         let posts;
         try {
-            posts = await Client4.getFlaggedPosts(userId);
+            // Fetch first page
+            posts = await Client4.getFlaggedPosts(userId, '', '', 0, 60);
 
             await Promise.all([getMentionsAndStatusesForPosts(posts.posts, dispatch, getState), dispatch(getMissingChannelsFromPosts(posts.posts))]);
         } catch (error) {
@@ -246,16 +247,101 @@ export function getFlaggedPosts(): ActionFuncAsync<PostList> {
             return {error};
         }
 
+        // Detect if first page is also last page
+        const isEnd = posts.order.length < 60;
+
         dispatch(batchActions([
             {
                 type: SearchTypes.RECEIVED_SEARCH_FLAGGED_POSTS,
                 data: posts,
+                isGettingMore: false, // Initial load, replace results
             },
             receivedPosts(posts),
+            {
+                type: SearchTypes.UPDATE_FLAGGED_POSTS_PAGINATION,
+                data: {
+                    params: {page: 0, per_page: 60},
+                    isFlaggedEnd: isEnd,
+                },
+            },
             {
                 type: SearchTypes.SEARCH_FLAGGED_POSTS_SUCCESS,
             },
         ], 'SEARCH_FLAGGED_POSTS_BATCH'));
+
+        return {data: posts};
+    };
+}
+
+export function getMoreFlaggedPosts(): ActionFuncAsync {
+    return async (dispatch, getState) => {
+        const state = getState();
+        const userId = getCurrentUserId(state);
+        const {params, isFlaggedEnd} = state.entities.search.flaggedPostsPagination || {
+            params: {page: 0, per_page: 60},
+            isFlaggedEnd: false,
+        };
+
+        // Don't fetch if we've reached the end
+        if (isFlaggedEnd) {
+            return {data: true};
+        }
+
+        // Prepare next page parameters
+        const newParams = {
+            ...params,
+            page: (params.page || 0) + 1,
+        };
+
+        dispatch({
+            type: SearchTypes.GET_MORE_FLAGGED_POSTS_REQUEST,
+            isGettingMore: true,
+        });
+
+        let posts;
+        try {
+            posts = await Client4.getFlaggedPosts(
+                userId,
+                '', // channelId
+                '', // teamId
+                newParams.page,
+                newParams.per_page,
+            );
+
+            await Promise.all([
+                getMentionsAndStatusesForPosts(posts.posts, dispatch, getState),
+                dispatch(getMissingChannelsFromPosts(posts.posts)),
+            ]);
+        } catch (error) {
+            forceLogoutIfNecessary(error, dispatch, getState);
+            dispatch({
+                type: SearchTypes.GET_MORE_FLAGGED_POSTS_FAILURE,
+                error,
+            });
+            return {error};
+        }
+
+        // Detect end of results
+        const isEnd = posts.order.length < newParams.per_page;
+
+        dispatch(batchActions([
+            {
+                type: SearchTypes.RECEIVED_SEARCH_FLAGGED_POSTS,
+                data: posts,
+                isGettingMore: true, // Important: tells reducer to append
+            },
+            receivedPosts(posts),
+            {
+                type: SearchTypes.UPDATE_FLAGGED_POSTS_PAGINATION,
+                data: {
+                    params: newParams,
+                    isFlaggedEnd: isEnd,
+                },
+            },
+            {
+                type: SearchTypes.GET_MORE_FLAGGED_POSTS_SUCCESS,
+            },
+        ], 'GET_MORE_FLAGGED_POSTS_BATCH'));
 
         return {data: posts};
     };

@@ -80,13 +80,15 @@ const SearchResults: React.FC<Props> = (props: Props): JSX.Element => {
     }, [props.searchPage, props.searchTerms, props.isSearchingTerm]);
 
     const handleScroll = (): void => {
-        if (!props.isFlaggedPosts && !props.isPinnedPosts && !props.isSearchingTerm && !props.isSearchGettingMore && !props.isChannelFiles) {
+        if (!props.isPinnedPosts && !props.isSearchingTerm && !props.isSearchGettingMore && !props.isChannelFiles && !props.isGettingMoreFlaggedPosts) {
             const scrollHeight = scrollbars.current?.scrollHeight || 0;
             const scrollTop = scrollbars.current?.scrollTop || 0;
             const clientHeight = scrollbars.current?.clientHeight || 0;
             if ((scrollTop + clientHeight + GET_MORE_BUFFER) >= scrollHeight) {
                 if (searchType === DataSearchTypes.FILES_SEARCH_TYPE) {
                     loadMoreFiles();
+                } else if (props.isFlaggedPosts) {
+                    loadMoreFlaggedPosts();
                 } else {
                     loadMorePosts();
                 }
@@ -110,6 +112,15 @@ const SearchResults: React.FC<Props> = (props: Props): JSX.Element => {
     const loadMoreFiles = debounce(
         () => {
             props.getMoreFilesForSearch();
+        },
+        100,
+        false,
+        (): void => {},
+    );
+
+    const loadMoreFlaggedPosts = debounce(
+        () => {
+            props.getMoreFlaggedPosts();
         },
         100,
         false,
@@ -141,8 +152,8 @@ const SearchResults: React.FC<Props> = (props: Props): JSX.Element => {
     const noResults = (!results || !Array.isArray(results) || results.length === 0);
     const noFileResults = (!fileResults || !Array.isArray(fileResults) || fileResults.length === 0);
     const isLoading = isSearchingTerm || isSearchingFlaggedPost || isSearchingPinnedPost || !isOpened;
-    const isAtEnd = (searchType === DataSearchTypes.MESSAGES_SEARCH_TYPE && isSearchAtEnd) || (searchType === DataSearchTypes.FILES_SEARCH_TYPE && isSearchFilesAtEnd);
-    const showLoadMore = !isAtEnd && !isChannelFiles && !isFlaggedPosts && !isPinnedPosts;
+    const isAtEnd = (searchType === DataSearchTypes.MESSAGES_SEARCH_TYPE && isSearchAtEnd) || (searchType === DataSearchTypes.FILES_SEARCH_TYPE && isSearchFilesAtEnd) || (isFlaggedPosts && props.isFlaggedAtEnd);
+    const showLoadMore = !isAtEnd && !isChannelFiles && !isPinnedPosts;
     const isMessagesSearch = (!isFlaggedPosts && !isMentionSearch && !isCard && !isPinnedPosts && !isChannelFiles);
 
     let contentItems;
@@ -305,7 +316,7 @@ const SearchResults: React.FC<Props> = (props: Props): JSX.Element => {
                     <PostSearchResultsItem
                         key={post.id}
                         post={post}
-                        matches={props.matches[post.id]}
+                        matches={props.matches[post.id] || []}
                         searchTerm={searchTerms}
                         isFlaggedPosts={props.isFlaggedPosts}
                         isMentionSearch={props.isMentionSearch}
@@ -325,7 +336,7 @@ const SearchResults: React.FC<Props> = (props: Props): JSX.Element => {
             );
         });
 
-        loadingMorePostsComponent = (showLoadMore) ? (
+        loadingMorePostsComponent = (showLoadMore || (isFlaggedPosts && props.isGettingMoreFlaggedPosts && !props.isFlaggedAtEnd)) ? (
             <div className='loading-screen'>
                 <div className='loading__content'>
                     <div className='round round-1'/>

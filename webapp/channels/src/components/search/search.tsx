@@ -85,6 +85,7 @@ const Search = ({
         filterFilesSearchByExt,
         getMoreFilesForSearch,
         getMorePostsForSearch,
+        getMoreFlaggedPosts,
         openRHSSearch,
         setRhsExpanded,
         showChannelFiles,
@@ -205,6 +206,10 @@ const Search = ({
         }
         getMoreFilesForSearch(team);
     }, [searchTeam, isMentionSearch, getMoreFilesForSearch]);
+
+    const getMoreFlaggedPostsCallback = useCallback(() => {
+        getMoreFlaggedPosts();
+    }, [getMoreFlaggedPosts]);
 
     // handle cloding of rhs-flyout
     const handleClose = (): void => closeRightHandSide();
@@ -556,6 +561,7 @@ const Search = ({
                     isSideBarExpanded={isRhsExpanded}
                     getMorePostsForSearch={getMorePostsForSearchCallback}
                     getMoreFilesForSearch={getMoreFilesForSearchCallback}
+                    getMoreFlaggedPosts={getMoreFlaggedPostsCallback}
                     setSearchFilterType={handleSetSearchFilter}
                     searchFilterType={searchFilterType}
                     setSearchType={(value: SearchType) => updateSearchType(value)}
