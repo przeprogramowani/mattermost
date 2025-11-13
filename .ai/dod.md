@@ -1,5 +1,11 @@
 # Definition of Done
 
+## Product Quality
+- [ ] Loading states implemented for async operations (spinners, skeletons, progress indicators)
+- [ ] Error handling with user-friendly messages and fallback UI
+- [ ] i18n support for all user-facingstrings
+- [ ] Accessibility standards met (ARIA labels, keyboard navigation, screen reader support)
+
 ## Code Quality
 - [ ] Code follows existing package structure and architectural patterns (App/Server/Store layers)
 - [ ] Appropriate build tags used (`enterprise`, `sourceavailable`) for edition-specific features
