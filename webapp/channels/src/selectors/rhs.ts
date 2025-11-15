@@ -6,6 +6,7 @@ import type {Post, PostType} from '@mattermost/types/posts';
 
 import {createSelector} from 'mattermost-redux/selectors/create_selector';
 import {makeGetChannel} from 'mattermost-redux/selectors/entities/channels';
+import {getFlaggedPosts as getFlaggedPostsBase} from 'mattermost-redux/selectors/entities/posts';
 import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
 import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
 
@@ -168,6 +169,17 @@ export function getIsSearchGettingMore(state: GlobalState): boolean {
     return state.entities.search.isSearchGettingMore;
 }
 
+export function getIsGettingMoreFlaggedPosts(state: GlobalState): boolean {
+    return state.entities.search.isGettingMoreFlaggedPosts || false;
+}
+
+export function getFlaggedPostsPagination(state: GlobalState) {
+    return state.entities.search.flaggedPostsPagination || {
+        params: {page: 0, per_page: 60},
+        isFlaggedEnd: false,
+    };
+}
+
 export function makeGetChannelDraft() {
     const defaultDraft = Object.freeze({
         message: '',
@@ -239,4 +251,13 @@ export function getIsRhsExpanded(state: GlobalState): boolean {
 
 export function getIsEditingMembers(state: GlobalState): boolean {
     return state.views.rhs.editChannelMembers === true;
+}
+
+export function getFlaggedPosts(state: GlobalState): Post[] {
+    return getFlaggedPostsBase(state);
+}
+
+export function getIsFlaggedAtEnd(state: GlobalState): boolean {
+    const pagination = getFlaggedPostsPagination(state);
+    return pagination.isFlaggedEnd || false;
 }

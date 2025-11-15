@@ -20,6 +20,7 @@ export type OwnProps = {
     updateSearchTerms: (terms: string) => void;
     getMorePostsForSearch: () => void;
     getMoreFilesForSearch: () => void;
+    getMoreFlaggedPosts: () => void;
     shrink: () => void;
     isCard?: boolean;
     isOpened?: boolean;
@@ -45,6 +46,8 @@ export type StateProps = {
     isSearchGettingMore: boolean;
     isSearchAtEnd: boolean;
     isSearchFilesAtEnd: boolean;
+    isGettingMoreFlaggedPosts: boolean;
+    isFlaggedAtEnd: boolean;
 };
 
 export type IntlProps = {

@@ -4344,6 +4344,8 @@
   "flag_message_modal.subheading": "Flagged messages will be sent to Content Reviewers for review.",
   "flag_post.flag": "Save Message",
   "flag_post.unflag": "Remove from Saved",
+  "flagged_posts.search_bar.clear": "Clear search",
+  "flagged_posts.search_bar.placeholder": "Search saved messages",
   "footer_pagination.count": "Showing {startCount, number}-{endCount, number} of {total, number}",
   "footer_pagination.next": "Next",
   "footer_pagination.prev": "Previous",

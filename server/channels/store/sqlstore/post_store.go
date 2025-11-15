@@ -475,20 +475,20 @@ func (s *SqlPostStore) Overwrite(rctx request.CTX, post *model.Post) (*model.Pos
 	return posts[0], nil
 }
 
-func (s *SqlPostStore) GetFlaggedPosts(userId string, offset int, limit int) (*model.PostList, error) {
-	return s.getFlaggedPosts(userId, "", "", offset, limit)
+func (s *SqlPostStore) GetFlaggedPosts(userId string, offset int, limit int, terms string) (*model.PostList, error) {
+	return s.getFlaggedPosts(userId, "", "", offset, limit, terms)
 }
 
-func (s *SqlPostStore) GetFlaggedPostsForTeam(userId, teamId string, offset int, limit int) (*model.PostList, error) {
-	return s.getFlaggedPosts(userId, "", teamId, offset, limit)
+func (s *SqlPostStore) GetFlaggedPostsForTeam(userId, teamId string, offset int, limit int, terms string) (*model.PostList, error) {
+	return s.getFlaggedPosts(userId, "", teamId, offset, limit, terms)
 }
 
-func (s *SqlPostStore) GetFlaggedPostsForChannel(userId, channelId string, offset int, limit int) (*model.PostList, error) {
-	return s.getFlaggedPosts(userId, channelId, "", offset, limit)
+func (s *SqlPostStore) GetFlaggedPostsForChannel(userId, channelId string, offset int, limit int, terms string) (*model.PostList, error) {
+	return s.getFlaggedPosts(userId, channelId, "", offset, limit, terms)
 }
 
 // TODO: convert to squirrel HW
-func (s *SqlPostStore) getFlaggedPosts(userId, channelId, teamId string, offset int, limit int) (*model.PostList, error) {
+func (s *SqlPostStore) getFlaggedPosts(userId, channelId, teamId string, offset int, limit int, terms string) (*model.PostList, error) {
 	pl := model.NewPostList()
 
 	posts := []*model.Post{}
@@ -513,6 +513,7 @@ func (s *SqlPostStore) getFlaggedPosts(userId, channelId, teamId string, offset 
 							AND Category = ?
 					)
 					CHANNEL_FILTER
+					SEARCH_FILTER
 					AND Posts.DeleteAt = 0
                 ) as A
             INNER JOIN Channels as B
@@ -531,9 +532,12 @@ func (s *SqlPostStore) getFlaggedPosts(userId, channelId, teamId string, offset 
 
 	queryParams := []any{userId, model.PreferenceCategoryFlaggedPost}
 
-	var channelClause, teamClause string
+	var channelClause, teamClause, searchClause string
 	channelClause, queryParams = s.buildFlaggedPostChannelFilterClause(channelId, queryParams)
 	query = strings.Replace(query, "CHANNEL_FILTER", channelClause, 1)
+
+	searchClause, queryParams = s.buildFlaggedPostSearchFilterClause(terms, queryParams)
+	query = strings.Replace(query, "SEARCH_FILTER", searchClause, 1)
 
 	queryParams = append(queryParams, userId)
 
@@ -568,6 +572,17 @@ func (s *SqlPostStore) buildFlaggedPostChannelFilterClause(channelId string, que
 	}
 
 	return "AND ChannelId = ?", append(queryParams, channelId)
+}
+
+func (s *SqlPostStore) buildFlaggedPostSearchFilterClause(terms string, queryParams []any) (string, []any) {
+	if terms == "" {
+		return "", queryParams
+	}
+
+	// Use PostgreSQL full-text search for text matching
+	// plainto_tsquery converts plain text to tsquery format automatically
+	// 'simple' configuration prevents stemming for more precise matching
+	return "AND to_tsvector('simple', Posts.Message) @@ plainto_tsquery('simple', ?)", append(queryParams, terms)
 }
 
 func (s *SqlPostStore) getPostWithCollapsedThreads(rctx request.CTX, id, userID string, opts model.GetPostsOptions, sanitizeOptions map[string]bool) (*model.PostList, error) {

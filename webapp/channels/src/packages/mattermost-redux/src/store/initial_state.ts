@@ -163,6 +163,8 @@ const state: GlobalState = {
             isSearchingTerm: false,
             isSearchGettingMore: false,
             isLimitedResults: -1,
+            flaggedPostsPagination: {},
+            isGettingMoreFlaggedPosts: false,
         },
         typing: {},
         roles: {

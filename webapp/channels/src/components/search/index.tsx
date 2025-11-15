@@ -8,7 +8,7 @@ import type {Dispatch} from 'redux';
 import type {Channel} from '@mattermost/types/channels';
 import type {ServerError} from '@mattermost/types/errors';
 
-import {getMorePostsForSearch, getMoreFilesForSearch} from 'mattermost-redux/actions/search';
+import {getMorePostsForSearch, getMoreFilesForSearch, getMoreFlaggedPosts} from 'mattermost-redux/actions/search';
 import {getCurrentChannel} from 'mattermost-redux/selectors/entities/channels';
 import {getIsCrossTeamSearchEnabled} from 'mattermost-redux/selectors/entities/general';
 
@@ -87,6 +87,7 @@ function mapDispatchToProps(dispatch: Dispatch) {
             getMorePostsForSearch,
             openRHSSearch,
             getMoreFilesForSearch,
+            getMoreFlaggedPosts,
             filterFilesSearchByExt,
         }, dispatch),
     };

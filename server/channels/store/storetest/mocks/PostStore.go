@@ -282,9 +282,9 @@ func (_m *PostStore) GetEtag(channelID string, allowFromCache bool, collapsedThr
 	return r0
 }
 
-// GetFlaggedPosts provides a mock function with given fields: userID, offset, limit
-func (_m *PostStore) GetFlaggedPosts(userID string, offset int, limit int) (*model.PostList, error) {
-	ret := _m.Called(userID, offset, limit)
+// GetFlaggedPosts provides a mock function with given fields: userID, offset, limit, terms
+func (_m *PostStore) GetFlaggedPosts(userID string, offset int, limit int, terms string) (*model.PostList, error) {
+	ret := _m.Called(userID, offset, limit, terms)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetFlaggedPosts")
@@ -292,19 +292,19 @@ func (_m *PostStore) GetFlaggedPosts(userID string, offset int, limit int) (*mod
 
 	var r0 *model.PostList
 	var r1 error
-	if rf, ok := ret.Get(0).(func(string, int, int) (*model.PostList, error)); ok {
-		return rf(userID, offset, limit)
+	if rf, ok := ret.Get(0).(func(string, int, int, string) (*model.PostList, error)); ok {
+		return rf(userID, offset, limit, terms)
 	}
-	if rf, ok := ret.Get(0).(func(string, int, int) *model.PostList); ok {
-		r0 = rf(userID, offset, limit)
+	if rf, ok := ret.Get(0).(func(string, int, int, string) *model.PostList); ok {
+		r0 = rf(userID, offset, limit, terms)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*model.PostList)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(string, int, int) error); ok {
-		r1 = rf(userID, offset, limit)
+	if rf, ok := ret.Get(1).(func(string, int, int, string) error); ok {
+		r1 = rf(userID, offset, limit, terms)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -312,9 +312,9 @@ func (_m *PostStore) GetFlaggedPosts(userID string, offset int, limit int) (*mod
 	return r0, r1
 }
 
-// GetFlaggedPostsForChannel provides a mock function with given fields: userID, channelID, offset, limit
-func (_m *PostStore) GetFlaggedPostsForChannel(userID string, channelID string, offset int, limit int) (*model.PostList, error) {
-	ret := _m.Called(userID, channelID, offset, limit)
+// GetFlaggedPostsForChannel provides a mock function with given fields: userID, channelID, offset, limit, terms
+func (_m *PostStore) GetFlaggedPostsForChannel(userID string, channelID string, offset int, limit int, terms string) (*model.PostList, error) {
+	ret := _m.Called(userID, channelID, offset, limit, terms)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetFlaggedPostsForChannel")
@@ -322,19 +322,19 @@ func (_m *PostStore) GetFlaggedPostsForChannel(userID string, channelID string, 
 
 	var r0 *model.PostList
 	var r1 error
-	if rf, ok := ret.Get(0).(func(string, string, int, int) (*model.PostList, error)); ok {
-		return rf(userID, channelID, offset, limit)
+	if rf, ok := ret.Get(0).(func(string, string, int, int, string) (*model.PostList, error)); ok {
+		return rf(userID, channelID, offset, limit, terms)
 	}
-	if rf, ok := ret.Get(0).(func(string, string, int, int) *model.PostList); ok {
-		r0 = rf(userID, channelID, offset, limit)
+	if rf, ok := ret.Get(0).(func(string, string, int, int, string) *model.PostList); ok {
+		r0 = rf(userID, channelID, offset, limit, terms)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*model.PostList)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(string, string, int, int) error); ok {
-		r1 = rf(userID, channelID, offset, limit)
+	if rf, ok := ret.Get(1).(func(string, string, int, int, string) error); ok {
+		r1 = rf(userID, channelID, offset, limit, terms)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -342,9 +342,9 @@ func (_m *PostStore) GetFlaggedPostsForChannel(userID string, channelID string, 
 	return r0, r1
 }
 
-// GetFlaggedPostsForTeam provides a mock function with given fields: userID, teamID, offset, limit
-func (_m *PostStore) GetFlaggedPostsForTeam(userID string, teamID string, offset int, limit int) (*model.PostList, error) {
-	ret := _m.Called(userID, teamID, offset, limit)
+// GetFlaggedPostsForTeam provides a mock function with given fields: userID, teamID, offset, limit, terms
+func (_m *PostStore) GetFlaggedPostsForTeam(userID string, teamID string, offset int, limit int, terms string) (*model.PostList, error) {
+	ret := _m.Called(userID, teamID, offset, limit, terms)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetFlaggedPostsForTeam")
@@ -352,19 +352,19 @@ func (_m *PostStore) GetFlaggedPostsForTeam(userID string, teamID string, offset
 
 	var r0 *model.PostList
 	var r1 error
-	if rf, ok := ret.Get(0).(func(string, string, int, int) (*model.PostList, error)); ok {
-		return rf(userID, teamID, offset, limit)
+	if rf, ok := ret.Get(0).(func(string, string, int, int, string) (*model.PostList, error)); ok {
+		return rf(userID, teamID, offset, limit, terms)
 	}
-	if rf, ok := ret.Get(0).(func(string, string, int, int) *model.PostList); ok {
-		r0 = rf(userID, teamID, offset, limit)
+	if rf, ok := ret.Get(0).(func(string, string, int, int, string) *model.PostList); ok {
+		r0 = rf(userID, teamID, offset, limit, terms)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*model.PostList)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(string, string, int, int) error); ok {
-		r1 = rf(userID, teamID, offset, limit)
+	if rf, ok := ret.Get(1).(func(string, string, int, int, string) error); ok {
+		r1 = rf(userID, teamID, offset, limit, terms)
 	} else {
 		r1 = ret.Error(1)
 	}

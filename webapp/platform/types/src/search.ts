@@ -22,6 +22,8 @@ export type SearchState = {
         posts: number;
         files: number;
     };
+    flaggedPostsPagination: any;
+    isGettingMoreFlaggedPosts: boolean;
 };
 
 export type SearchParameter = {
